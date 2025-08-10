@@ -1,0 +1,87 @@
+﻿@model IEnumerable<prjMyBlog.ViewModels.CBlogPostPreviewViewModel>
+
+@{
+    ViewData["Title"] = "標籤文章列表";
+    string currentTag = ViewBag.CurrentTag as string ?? "未知標籤";
+}
+
+@section Styles {
+    <style>
+        .preview-img {
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .card {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-body {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .btn-readmore {
+            margin-top: auto;
+            align-self: flex-start;
+        }
+
+        .badge-tag {
+            margin-right: 4px;
+        }
+    </style>
+}
+
+<h2 class="mb-4">與標籤「@currentTag」相關的文章</h2>
+
+<div class="row row-cols-1 row-cols-md-3 g-4">
+    @foreach (var item in Model)
+    {
+        <div class="col">
+            <div class="card h-100 shadow-sm">
+                @if (!string.IsNullOrEmpty(item.PreviewImagePath))
+                {
+                    <img src="~/images/@item.PreviewImagePath" class="card-img-top preview-img" />
+                }
+                else
+                {
+                    <div class="bg-secondary text-white d-flex align-items-center justify-content-center preview-img">
+                        無預覽圖
+                    </div>
+                }
+
+                <div class="card-body">
+                    <h5 class="card-title">@item.Post.FTitle</h5>
+                    <p class="card-text text-muted">
+                        @item.CategoryName<br />
+                        作者：@item.AuthorName<br />
+                        建立時間：@item.Post.FCreatedAt?.ToString("yyyy-MM-dd HH:mm")
+                    </p>
+
+                    @* 顯示標籤（可點擊跳轉） *@
+                    <div class="mb-2">
+                        @{
+                            var tagNames = item.Post.FPostId != 0
+                            ? (ViewBag.TagMap as Dictionary<int, List<string>>)?[item.Post.FPostId]
+                            : null;
+
+                            if (tagNames != null)
+                            {
+                                foreach (var tag in tagNames)
+                                {
+                                    <a class="badge bg-primary text-decoration-none badge-tag"
+                                       href="@Url.Action("TagPosts", "BlogPost", new { tag = tag })">@tag</a>
+                                }
+                            }
+                        }
+                    </div>
+
+                    <a class="btn btn-sm btn-primary" asp-controller="BlogPost" asp-action="Details" asp-route-id="@item.Post.FPostId">閱讀更多</a>
+                </div>
+            </div>
+        </div>
+    }
+</div>

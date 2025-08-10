@@ -1,0 +1,24 @@
+﻿@model TCategory
+@{
+    ViewData["Title"] = "新增分類";
+}
+
+<h2 class="mb-4">新增分類</h2>
+
+@if (ViewBag.Message != null)
+{
+    <div class="alert alert-danger">
+        @ViewBag.Message
+    </div>
+}
+
+<form asp-action="Create" method="post">
+    <div class="mb-3">
+        <label asp-for="FName" class="form-label">分類名稱</label>
+        <input asp-for="FName" class="form-control" />
+        <span asp-validation-for="FName" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">確定新增</button>
+    <a asp-action="List" class="btn btn-secondary ms-2">返回清單</a>
+</form>

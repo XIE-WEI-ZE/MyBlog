@@ -1,0 +1,46 @@
+﻿@model prjMyBlog.ViewModels.CLoginViewModel
+@{
+    ViewData["Title"] = "會員登入";
+}
+
+@if (TempData["Message"] != null)
+{
+    <div class="alert alert-success text-center">@TempData["Message"]</div>
+}
+
+<div class="row justify-content-center mt-5">
+    <div class="col-md-6">
+        <h2 class="text-center mb-4">會員登入</h2>
+
+        @if (ViewBag.Message != null)
+        {
+            <div class="alert alert-danger text-center">@ViewBag.Message</div>
+        }
+
+        <form asp-action="Login" method="post">
+            <div class="form-outline mb-4">
+                <label class="form-label" for="txtAccount">帳號</label>
+                <input asp-for="txtAccount" class="form-control" id="txtAccount" />
+            </div>
+
+            <div class="form-outline mb-4">
+                <label class="form-label" for="txtPassword">密碼</label>
+                <input asp-for="txtPassword" class="form-control" id="txtPassword" type="password" />
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100">登入</button>
+        </form>
+        <div class="text-center mt-3">
+            <p>或使用第三方登入</p>
+            <a class="btn btn-danger w-20" href="@Url.Action("GoogleLogin", "Account")">
+                <i class="fa-brands fa-google"></i> 
+            </a>
+            <a class="btn btn-success" href="@Url.Action("LineLogin", "Account")">
+                <i class="fa-brands fa-line"></i> 
+            </a>
+
+        </div>
+        <a asp-action="ForgotPassword" asp-controller="Account">忘記密碼？</a>
+
+    </div>
+</div>

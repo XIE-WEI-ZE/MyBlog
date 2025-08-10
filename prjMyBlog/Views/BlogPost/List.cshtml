@@ -1,0 +1,88 @@
+﻿@model IEnumerable<prjMyBlog.Models.TBlogPost>
+@using prjMyBlog.Helpers
+@{
+    ViewData["Title"] = "文章列表";
+    var categories = ViewBag.Categories as Dictionary<int, string>;
+    var authors = ViewBag.Authors as Dictionary<int, string>;
+}
+
+<h2 class="mb-4">文章列表</h2>
+
+<p>
+    <a class="btn btn-success" asp-action="Create">新增文章</a>
+</p>
+<form asp-action="List" method="get" class="mb-4">
+    <div class="input-group rounded">
+        <input type="search"
+               name="txtKeyword"
+               class="form-control rounded"
+               placeholder="搜尋文章標題或內容"
+               aria-label="Search"
+               aria-describedby="search-addon"
+               value="@ViewBag.txtKeyword" />
+        <button type="submit" class="input-group-text border-0 bg-light" id="search-addon">
+            <i class="fas fa-search"></i>
+        </button>
+    </div>
+</form>
+
+<table class="table table-bordered table-hover text-center">
+    <thead class="table-light">
+        <tr>
+            <th>編號</th>
+            <th>標題</th>
+            @* <th>內容預覽</th> *@
+            <th>建立時間</th>
+            <th>更新時間</th>
+            <th>分類</th>
+            <th>作者</th>
+            <th>操作</th>
+        </tr>
+    </thead>
+    <tbody>
+        @{
+            int count = 1;
+        }
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@count</td>
+                <td>@item.FTitle</td>
+                <td>@item.FCreatedAt?.ToString("yyyy-MM-dd HH:mm")</td>
+                <td>@item.FUpdatedAt?.ToString("yyyy-MM-dd HH:mm")</td>
+                <td>@(categories.ContainsKey(item.FCategoryId ?? 0) ? categories[item.FCategoryId ?? 0] : "未分類")</td>
+                <td>@(authors.ContainsKey(item.FAuthorId ?? 0) ? authors[item.FAuthorId ?? 0] : "未知作者")</td>
+                <td>
+                    <a class="btn btn-sm btn-primary" asp-action="Edit" asp-route-id="@item.FPostId">編輯</a>
+                    <a class="btn btn-sm btn-info" asp-action="Details" asp-route-id="@item.FPostId">詳細</a>
+                    <a class="btn btn-sm btn-danger"
+                       asp-action="Delete"
+                       asp-route-id="@item.FPostId"
+                       onclick="return confirm('確定要刪除這篇文章嗎？')">
+                        刪除
+                    </a>
+                </td>
+            </tr>
+            count++;
+        }
+
+    </tbody>
+</table>
+@if ((int)ViewBag.TotalPages > 1)
+{
+    <nav class="mt-4">
+        <ul class="pagination justify-content-center">
+            @for (int i = 1; i <= (int)ViewBag.TotalPages; i++)
+            {
+                <li class="page-item @(i == (int)ViewBag.CurrentPage ? "active" : "")">
+                    <a class="page-link"
+                       asp-action="List"
+                       asp-route-page="@i"
+                       asp-route-txtKeyword="@ViewBag.txtKeyword">
+                        @i
+                    </a>
+                </li>
+            }
+        </ul>
+    </nav>
+}

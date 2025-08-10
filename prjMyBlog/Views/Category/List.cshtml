@@ -1,0 +1,42 @@
+﻿@model IEnumerable<TCategory>
+
+@{
+    ViewData["Title"] = "分類清單";
+}
+
+<h2 class="mb-4">分類管理</h2>
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["ErrorMessage"]
+    </div>
+}
+
+<p>
+    <a class="btn btn-success" asp-action="Create">新增分類</a>
+</p>
+
+<table class="table table-bordered table-hover text-center">
+    <thead class="table-light">
+        <tr>
+            <th>分類編號</th>
+            <th>分類名稱</th>
+            <th>操作</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.FCategoryId</td>
+                <td>@item.FName</td>
+                <td>
+                    <form asp-action="Delete" method="post" asp-route-id="@item.FCategoryId" onsubmit="return confirm('確定要刪除嗎？')">
+                        <button type="submit" class="btn btn-sm btn-danger">刪除</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

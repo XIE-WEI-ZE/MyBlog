@@ -1,0 +1,136 @@
+﻿@using System.Text.Json
+@model prjMyBlog.ViewModels.CPostEditViewModel
+@{
+    ViewData["Title"] = "編輯文章";
+    var categories = ViewBag.Categories as List<prjMyBlog.Models.TCategory>;
+    var images = ViewBag.Images as List<prjMyBlog.Models.TPostImage>;
+    var tags = ViewBag.Tags as List<prjMyBlog.Models.TTag>;
+    var selectedTagIds = ViewBag.SelectedTagIds as List<int> ?? new List<int>();
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["ErrorMessage"]
+    </div>
+}
+
+
+@section Styles {
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tagify/4.17.9/tagify.min.css" />
+
+    <style>
+        .preview-image {
+            max-height: 200px;
+            object-fit: cover;
+            cursor: pointer;
+        }
+
+        .ck-editor__editable {
+            min-height: 400px;
+        }
+
+        .ck-content img {
+            max-width: 100%;
+            max-height: 300px;
+            height: auto;
+        }
+    </style>
+}
+
+<h2 class="mb-4">編輯文章</h2>
+
+<form asp-action="Edit" method="post" enctype="multipart/form-data">
+    <input asp-for="FPostId" type="hidden" />
+
+    <div class="mb-3">
+        <label asp-for="FTitle" class="form-label">標題</label>
+        <input asp-for="FTitle" class="form-control" />
+        <span asp-validation-for="FTitle" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="FCategoryId" class="form-label">選擇分類</label>
+        <select asp-for="FCategoryId" class="form-select">
+            <option value="">請選擇</option>
+            @foreach (var cat in categories)
+            {
+                <option value="@cat.FCategoryId" selected="@(cat.FCategoryId == Model.FCategoryId)">
+                    @cat.FName
+                </option>
+            }
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="NewCategoryName" class="form-label">新增分類名稱</label>
+        <input asp-for="NewCategoryName" class="form-control" placeholder="可留空不填" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">標籤（可輸入多個，按 Enter 確認）</label>
+        <input id="tagInput" name="NewTags" type="text" class="form-control" />
+    </div>
+
+
+    <div class="mb-3">
+        <label class="form-label">內容</label>
+        <textarea asp-for="FContent" id="editor" class="form-control" rows="10"></textarea>
+        <span asp-validation-for="FContent" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">目前預覽圖</label>
+        @if (images != null && images.Count > 0)
+        {
+            var img = images[0];
+            <img src="~/images/@img.FImagePath" class="img-thumbnail preview-image" />
+        }
+        else
+        {
+            <div class="text-muted">尚未上傳預覽圖</div>
+        }
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">更換預覽圖</label>
+        <input type="file" name="photo" class="form-control" accept="image/*" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">更新文章</button>
+    <a class="btn btn-secondary" href="@Url.Action("List")">返回列表</a>
+</form>
+
+@section Scripts {
+    <script src="https://cdn.ckeditor.com/ckeditor5/39.0.0/classic/ckeditor.js"></script>
+    <script>
+        ClassicEditor.create(document.querySelector('#editor'), {
+            ckfinder: {
+                uploadUrl: '/BlogPost/UploadImage'
+            }
+        }).catch(error => {
+            console.error(error);
+        });
+    </script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tagify/4.17.9/tagify.min.js"></script>
+    <script>
+        const input = document.querySelector('#tagInput');
+        const tagify = new Tagify(input, {
+            delimiters: ",| ",
+            maxTags: 10,
+            originalInputValueFormat: values => JSON.stringify(values), 
+            // whitelist: @Html.Raw(ViewBag.TagNamesJson ?? "[]"),
+            whitelist: [],
+            dropdown: {
+                enabled: 0,
+                closeOnSelect: false,
+                highlightFirst: false
+            }
+        });
+
+        //  顯示文章原有標籤
+        tagify.addTags(@Html.Raw(JsonSerializer.Serialize(ViewBag.SelectedTagString ?? new List<object>())));
+    </script>
+}
+

@@ -1,0 +1,132 @@
+﻿@using System.Text.Json
+@model TBlogPost
+@{
+    ViewData["Title"] = "新增文章";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tagify/4.17.9/tagify.min.css" />
+
+    <style>
+        .ck-editor__editable {
+            min-height: 400px;
+        }
+
+        .ck-content img {
+            max-width: 100%;
+            max-height: 300px;
+            height: auto;
+        }
+    </style>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["ErrorMessage"]
+    </div>
+}
+
+
+<h2 class="mb-4">新增文章</h2>
+
+<form asp-action="Create" enctype="multipart/form-data" method="post">
+    <div class="mb-3">
+        <label asp-for="FTitle" class="form-label">標題</label>
+        <input asp-for="FTitle" class="form-control" />
+        <span asp-validation-for="FTitle" class="text-danger"></span>
+    </div>
+
+    <input type="hidden" name="FAuthorId" value="@ViewBag.AuthorId" />
+
+
+    <div class="mb-3">
+        <label asp-for="FCategoryId" class="form-label">選擇分類</label>
+        <select asp-for="FCategoryId" class="form-select">
+            <option value="">請選擇</option>
+            @foreach (var cat in ViewBag.Categories)
+            {
+                <option value="@cat.FCategoryId">@cat.FName</option>
+            }
+        </select>
+        <span asp-validation-for="FCategoryId" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label>或新增自訂分類</label>
+        <input type="text" name="newCategoryName" class="form-control" placeholder="請輸入新分類名稱（可留空）" />
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="FContent" class="form-label">內容</label>
+        <textarea asp-for="FContent" id="editor" rows="10" class="form-control"></textarea>
+        <span asp-validation-for="FContent" class="text-danger"></span>
+    </div>
+    @* <div class="mb-3">
+        <label class="form-label">選擇標籤（可複選）</label><br />
+        @foreach (var tag in ViewBag.Tags as List<prjMyBlog.Models.TTag>)
+        {
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="checkbox" name="SelectedTagIds" value="@tag.FTagId" id="tag_@tag.FTagId" />
+                <label class="form-check-label" for="tag_@tag.FTagId">@tag.FName</label>
+            </div>
+        }
+    </div> *@
+
+    <div class="mb-3">
+        <label class="form-label">標籤（可輸入多個，按 Enter 確認）</label>
+        <input id="tagInput" name="NewTags" type="text" class="form-control" autocomplete="off" autocorrect="off" spellcheck="false" />
+
+    </div>
+
+
+    <div class="mb-3">
+        <label class="form-label">上傳預覽圖片</label>
+        <input type="file" name="photo" class="form-control" accept="image/*" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">送出文章</button>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <!-- CKEditor 設定 -->
+    <script src="https://cdn.ckeditor.com/ckeditor5/39.0.0/classic/ckeditor.js"></script>
+    <script>
+        ClassicEditor.create(document.querySelector('#editor'), {
+            ckfinder: {
+                uploadUrl: '/BlogPost/UploadImage'
+            }
+        }).catch(error => {
+            console.error(error);
+        });
+    </script>
+
+    <!-- Tagify JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tagify/4.17.9/tagify.min.js"></script>
+    <!--  正確初始化 Tagify -->
+    <script>
+        const input = document.querySelector('#tagInput');
+        const tagify = new Tagify(input, {
+            maxTags: 5,
+            //  確保送出時會是 JSON 字串
+            originalInputValueFormat: items => JSON.stringify(items),
+            //  白名單建議值
+            // whitelist: @Html.Raw(ViewBag.TagNamesJson),
+            whitelist: [],
+            dropdown: {
+                enabled: 0,
+                // maxItems: 10,
+                // position: "text",
+                // highlightFirst: false
+            }
+        });
+
+        //  除錯：印出送出的 JSON
+        document.querySelector('form').addEventListener('submit', () => {
+            console.log("送出標籤內容：", input.value);
+        });
+    </script>
+}
+

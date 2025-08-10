@@ -1,0 +1,184 @@
+﻿@model prjMyBlog.Models.TBlogPost
+@using prjMyBlog.ViewModels
+
+@{
+    ViewData["Title"] = "文章詳情";
+    var images = ViewBag.Images as List<prjMyBlog.Models.TPostImage>;
+    var tagNames = ViewBag.TagNames as List<string> ?? new List<string>();
+    var comments = ViewBag.Comments as List<CCommentViewModel> ?? new List<CCommentViewModel>();
+
+    string json = Context.Session.GetString("SK_LOGINED_USER");
+    var currentUser = string.IsNullOrEmpty(json) ? null : System.Text.Json.JsonSerializer.Deserialize<TUser>(json);
+    bool isAdmin = currentUser?.FIsAdmin == true;
+}
+
+@section Styles {
+    <style>
+        .preview-image {
+            max-height: 200px;
+            object-fit: cover;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+            .preview-image:hover {
+                transform: scale(1.05);
+            }
+
+        .ck-content img {
+            max-width: 100%;
+            max-height: 400px;
+            height: auto;
+        }
+    </style>
+}
+
+<h2 class="mb-4">@Model.FTitle</h2>
+
+<div class="mb-3 text-muted">
+    建立時間：@(Model.FCreatedAt?.ToString("yyyy-MM-dd HH:mm") ?? "無")
+    更新時間：@(Model.FUpdatedAt?.ToString("yyyy-MM-dd HH:mm") ?? "無")
+    分類：@ViewBag.CategoryName
+    作者：@ViewBag.AuthorName
+</div>
+
+<hr />
+
+<div class="mb-4">
+    <h5>文章內容：</h5>
+    <div class="ck-content">
+        @Html.Raw(Model.FContent)
+    </div>
+</div>
+
+
+
+@if (tagNames.Any())
+{
+    <div class="mb-4">
+        @foreach (var tag in tagNames)
+        {
+            <a class="badge rounded-pill bg-primary text-white text-decoration-none me-2 px-3 py-2"
+               href="@Url.Action("TagPosts", "BlogPost", new { tag = tag })">
+                @tag
+            </a>
+        }
+    </div>
+}
+
+<hr />
+<h4>留言區</h4>
+
+<div id="commentList">
+    @if (comments.Any())
+    {
+        foreach (var item in comments)
+        {
+            <div class="comment-wrapper" data-id="@item.FCommentId">
+                <div class="comment-item mb-3 border-bottom pb-2">
+                    <strong>@item.Username</strong>
+                    <small class="text-muted">(@(item.Time?.ToString("yyyy-MM-dd HH:mm") ?? "無"))</small>
+                    <p>@item.Content</p>
+
+                    @if (currentUser != null && (item.Username == currentUser.FUsername || isAdmin))
+                    {
+                        <button type="button"
+                                class="btn btn-sm btn-outline-danger btn-delete-comment"
+                                data-id="@item.FCommentId">
+                            刪除
+                        </button>
+                    }
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <p class="text-muted">目前沒有任何留言。</p>
+    }
+</div>
+
+@if (Context.Session.Keys.Contains("SK_LOGINED_USER"))
+{
+    <form id="commentForm">
+        <input type="hidden" name="postId" value="@Model.FPostId" />
+        <div class="mb-3">
+            <textarea name="content" class="form-control" rows="3" placeholder="留下你的留言..." required></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">送出留言</button>
+    </form>
+}
+else
+{
+    <div class="alert alert-info">
+        請先 <a asp-controller="Account" asp-action="Login">登入</a> 才能留言。
+    </div>
+}
+
+
+<a href="@Url.Action("Index", "Home")" class="btn btn-secondary mt-4">返回首頁</a>
+
+@section Scripts {
+    <script>
+        // 當使用者送出留言表單時，執行 AJAX 新增留言
+        document.getElementById("commentForm")?.addEventListener("submit", async function (e) {
+            e.preventDefault();
+            const form = e.target;
+            const postId = form.postId.value;
+            const content = form.content.value;
+
+            const response = await fetch("/BlogPost/AddComment", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded"
+                },
+                body: `postId=${encodeURIComponent(postId)}&content=${encodeURIComponent(content)}`
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                // 將新增留言的 HTML 插入最上方
+                const commentHtml = `
+                    <div class="comment-wrapper" data-id="${result.commentId}">
+                        <div class="comment-item mb-3 border-bottom pb-2">
+                            <strong>${result.username}</strong>
+                            <small class="text-muted">(${result.time})</small>
+                            <p>${result.content}</p>
+                            ${result.canDelete ? `
+                                <button type="button" class="btn btn-sm btn-outline-danger btn-delete-comment" data-id="${result.commentId}">刪除</button>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+                document.getElementById("commentList").insertAdjacentHTML("afterbegin", commentHtml);
+                form.content.value = "";// 清空留言欄位
+            } else {
+                alert(result.message || "留言失敗");
+            }
+        });
+
+        // 刪除留言功能（使用事件委派監聽刪除按鈕）
+        document.getElementById("commentList")?.addEventListener("click", async function (e) {
+            if (e.target.classList.contains("btn-delete-comment")) {
+                const id = e.target.dataset.id;
+                const confirmed = confirm("確定要刪除這則留言嗎？");
+                if (!confirmed) return;
+
+                const response = await fetch(`/BlogPost/DeleteComment?id=${id}`, {
+                    method: "POST"
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    // 找到該留言區塊並從 DOM 中移除
+                    const commentElement = e.target.closest(`.comment-wrapper[data-id="${id}"]`);
+                    if (commentElement) commentElement.remove();
+                } else {
+                    alert(result.message || "刪除失敗");
+                }
+            }
+        });
+    </script>
+}
+
