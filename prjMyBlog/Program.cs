@@ -13,7 +13,7 @@ builder.Configuration
     .SetBasePath(Directory.GetCurrentDirectory()) 
     .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
     .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
-    .AddEnvironmentVariables(); // 預備支援環境變數，例如 Azure 上部署時會用
+    .AddEnvironmentVariables(); //上雲會用到
 
 
 // 1. 資料庫連線
@@ -37,7 +37,7 @@ builder.Services.AddControllersWithViews()
         options.JsonSerializerOptions.Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping;
     });
 
-//  4. 加入 Google 認證
+//  4. 加入 第三方 認證
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;

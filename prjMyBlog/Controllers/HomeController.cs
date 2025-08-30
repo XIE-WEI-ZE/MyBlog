@@ -28,7 +28,7 @@ namespace prjMyBlog.Controllers
                 query = query.Where(p => p.FTitle.Contains(txtKeyword) || p.FContent.Contains(txtKeyword));
             }
 
-            // 📌 分頁計算
+            //  分頁計算
             int totalCount = query.Count();
             int totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
 

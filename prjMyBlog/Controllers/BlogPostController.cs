@@ -477,22 +477,6 @@ namespace prjMyBlog.Controllers
         }
 
 
-
-        //[HttpPost]
-        //[ValidateAntiForgeryToken]
-        //public IActionResult DeleteImage(int id, int postId)
-        //{
-        //    Console.WriteLine($"[DEBUG] DeleteImage called with id={id}, postId={postId}");
-
-        //    PostFactory.DeleteImage(id); // 這會刪圖片+檔案
-        //    TempData["message"] = "圖片已成功刪除";
-
-        //    return RedirectToAction("Edit", new { id = postId });
-        //}
-
-
-
-
         public IActionResult Delete(int? id)
         {
             if (id == null)

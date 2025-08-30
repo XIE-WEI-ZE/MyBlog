@@ -43,7 +43,6 @@ namespace prjMyBlog.Controllers
             }
 
             // =====  加鹽驗證 =====
-            // 將 string 轉為 byte[]
             byte[] salt = Convert.FromBase64String(user.FPasswordSalt);
             byte[] inputPwdBytes = Encoding.UTF8.GetBytes(vm.txtPassword);
             byte[] combined = salt.Concat(inputPwdBytes).ToArray();
@@ -185,7 +184,7 @@ namespace prjMyBlog.Controllers
             return RedirectToAction("Index", "Home");
         }
 
-        // ✅ 跳轉到 LINE 登入頁
+        //  跳轉到 LINE 登入頁
         public IActionResult LineLogin()
         {
             var properties = new AuthenticationProperties

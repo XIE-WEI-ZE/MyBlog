@@ -37,13 +37,13 @@ namespace prjMyBlog.Helpers
                 string hash = parts[2];
 
                 DateTime tokenTime = DateTime.ParseExact(timestamp, "yyyyMMddHHmmss", null);
-                Console.WriteLine($" Token timestamp: {timestamp} ➜ {tokenTime}");
+                Console.WriteLine($" Token timestamp: {timestamp} => {tokenTime}");
                 Console.WriteLine($" 現在時間 (UTC): {DateTime.UtcNow}");
                 Console.WriteLine($" 時間差 (分鐘): {(DateTime.UtcNow - tokenTime).TotalMinutes}");
 
                 if ((DateTime.UtcNow - tokenTime).TotalMinutes > 10)
                 {
-                    Console.WriteLine("❌ Token 已過期");
+                    Console.WriteLine(" Token 已過期");
                     return false;
                 }
 
@@ -58,12 +58,12 @@ namespace prjMyBlog.Helpers
                 Console.WriteLine($" 計算出的 hash: {expectedHash}");
 
                 bool result = expectedHash == hash;
-                Console.WriteLine(result ? "✅ Token 驗證成功" : "❌ Hash 不相符");
+                Console.WriteLine(result ? " Token 驗證成功" : " Hash 不相符");
                 return result;
             }
             catch (Exception ex)
             {
-                Console.WriteLine("❌ 發生例外: " + ex.Message);
+                Console.WriteLine(" 發生例外: " + ex.Message);
                 return false;
             }
         }
