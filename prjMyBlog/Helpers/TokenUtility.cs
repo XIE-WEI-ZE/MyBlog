@@ -38,8 +38,8 @@ namespace prjMyBlog.Helpers
 
                 DateTime tokenTime = DateTime.ParseExact(timestamp, "yyyyMMddHHmmss", null);
                 Console.WriteLine($" Token timestamp: {timestamp} => {tokenTime}");
-                Console.WriteLine($" 現在時間 (UTC): {DateTime.UtcNow}");
-                Console.WriteLine($" 時間差 (分鐘): {(DateTime.UtcNow - tokenTime).TotalMinutes}");
+                Console.WriteLine($" 現在時間 : {DateTime.Now}");
+                Console.WriteLine($" 時間差 (分鐘): {(DateTime.Now - tokenTime).TotalMinutes}");
 
                 if ((DateTime.UtcNow - tokenTime).TotalMinutes > 10)
                 {
